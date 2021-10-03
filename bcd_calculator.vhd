@@ -7,7 +7,7 @@ entity bcd_calculator is
     port
     (
         G_CLOCK_50: in std_logic;                       -- 50 MHz clock from the FPGA.
-        V_SW:       in std_logic_vector (13 downto 0);  -- Input vector.
+        V_SW:       in std_logic_vector (17 downto 0);  -- Input vector.
         V_BT:       in std_logic_vector (4 downto 0);   -- Input pressure buttons.
         G_HEX0:     out std_logic_vector (6 downto 0);  -- Show the input A.
         G_HEX1:     out std_logic_vector (6 downto 0);  -- Show the input A.
@@ -30,22 +30,26 @@ architecture bcd_calculator_test of bcd_calculator is
     -- This will be used to trigger the reset function.
     signal resetTrigger: std_logic := '0';
 
-    -- This will be used to store the result of the calculations in binary.
-    signal result: std_logic_vector (26 downto 0) := "000000000000000000000000000";
+    -- This will be used to detect when the 7-seg display has cleares it's output after the reset.
+    signal updatedDisplay: std_logic := '0';
+
+    -- These will be used to store the outputs from each of the operations.
+    signal additionResult:          std_logic_vector (15 downto 0) := "0000000000000000";
+    signal multiplicationResult:    std_logic_vector (26 downto 0) := "000000000000000000000000000";
 
     -- This will be used to store a and b input itself.
-    signal a: std_logic_vector (15 downto 0) := "000000000000000";
-    signal b: std_logic_vector (15 downto 0) := "000000000000000";
+    signal a: std_logic_vector (15 downto 0) := "0000000000000000";
+    signal b: std_logic_vector (15 downto 0) := "0000000000000000";
 
 begin
     
     -- Importing the n-bit adder from another vhdl file.
-    nBitAdder: entity work.n_somador.vhd (teste)
+    nBitAdder: entity work.n_somador (teste)
 
     port map (
         x => a,
         y => b,
-        z => result,
+        z => additionResult,
         carry_out => open
     );
 
@@ -57,15 +61,20 @@ begin
         begin
 
             if rising_edge (G_CLOCK_50) then
-                storeADelay (0) := V_BT (0);
-                storeADelay (1) := storeADelay (0);
-                storeADelay (2) := storeADelay (1);
-                
-                if storeADelay = "000" then
-                    storeA <= '1';
-                    storeADelay := "111";       
-                end if;
 
+                if resetTrigger = '1' then
+                    storeA <= '0';
+
+                else
+                    storeADelay (0) := V_BT (0);
+                    storeADelay (1) := storeADelay (0);
+                    storeADelay (2) := storeADelay (1);
+                    
+                    if storeADelay = "000" then
+                        storeA <= '1';
+                        storeADelay := "111";       
+                    end if;
+                end if;
             end if;
     end process;
 
@@ -77,15 +86,20 @@ begin
         begin
 
             if rising_edge (G_CLOCK_50) then
-                storeBDelay (0) := V_BT (1);
-                storeBDelay (1) := storeBDelay (0);
-                storeBDelay (2) := storeBDelay (1);
-                
-                if storeBDelay = "000" then
-                    storeB <= '1';
-                    storeBDelay := "111";       
-                end if;
 
+                if resetTrigger = '1' then
+                    storeB <= '0';
+
+                else
+                    storeBDelay (0) := V_BT (0);
+                    storeBDelay (1) := storeBDelay (0);
+                    storeBDelay (2) := storeBDelay (1);
+                    
+                    if storeBDelay = "000" then
+                        storeB <= '1';
+                        storeBDelay := "111";       
+                    end if;
+                end if;
             end if;
     end process;
 
@@ -97,15 +111,20 @@ begin
         begin
 
             if rising_edge (G_CLOCK_50) then
-                storeResetDelay (0) := V_BT (2);
-                storeResetDelay (1) := storeResetDelay (0);
-                storeResetDelay (2) := storeResetDelay (1);
-                
-                if storeResetDelay = "000" then
-                    resetTrigger <= '1';
-                    storeResetDelay := "111";       
-                end if;
 
+                if updatedDisplay = '1' then
+                    resetTrigger <= '0';
+
+                else
+                    storeResetDelay (0) := V_BT (2);
+                    storeResetDelay (1) := storeResetDelay (0);
+                    storeResetDelay (2) := storeResetDelay (1);
+                    
+                    if storeResetDelay = "000" then
+                        resetTrigger <= '1';
+                        storeResetDelay := "111";       
+                    end if;
+                end if;
             end if;
     end process;
 
@@ -121,191 +140,205 @@ begin
         variable hundredsB:    std_logic_vector (3 downto 0) := "0000"; -- Hundreds of the B input.
         variable tensB:        std_logic_vector (3 downto 0) := "0000"; -- Tens of the B input.
         variable unitsB:       std_logic_vector (3 downto 0) := "0000"; -- Units of the B input.
+        variable tempVector:   std_logic_vector (15 downto 0) := "0000000000000000";
 
-        thousandsA:= V_SW (15 downto 12);
-        hundredsA  := V_SW (11 downto 8);
-        tensA      := V_SW (7 downto 4);
-        unitsA     := V_SW (3 downto 0);
+        begin
 
-        if storeA = '1' then
-            a <= V_SW (15 downto 0);
-            thousandsB := V_SW (15 downto 12);
-            hundredsB  := V_SW (11 downto 8);
-            tensB      := V_SW (7 downto 4);
-            unitsB     := V_SW (3 downto 0);
-        end if;
+            updatedDisplay <= '0';
 
-        if storeB = '1' then
-            b <= V_SW (15 downto 0);
-        end if;
+            for i in 0 to 15 loop
+                tempVector (i) := V_SW (i);
+            end loop;
 
-        if resetTrigger = 1 then
+            if storeA = '0' then
+
+                thousandsA := tempVector (15 downto 12);
+                hundredsA  := tempVector (11 downto 8);
+                tensA      := tempVector (7 downto 4);
+                unitsA     := tempVector (3 downto 0);
+
+            end if;
+
+            if storeA = '1' then
+                a <= tempVector (15 downto 0);
+                thousandsB := tempVector (15 downto 12);
+                hundredsB  := tempVector (11 downto 8);
+                tensB      := tempVector (7 downto 4);
+                unitsB     := tempVector (3 downto 0);
+            end if;
+
+            if storeB = '1' then
+                b <= V_SW (15 downto 0);
+            end if;
+
+            if resetTrigger = '1' then
+                
+                thousandsA := "0000";
+                hundredsA  := "0000";
+                tensA      := "0000";
+                unitsA     := "0000";
+                thousandsB := "0000";
+                hundredsB  := "0000";
+                tensB      := "0000";
+                unitsB     := "0000";
+                a <= "0000000000000000";
+                b <= "0000000000000000";
+                updatedDisplay <= '1';
+
+            end if;
+
+            -- Tables to convert the B input to 7-seg.
+            case thousandsB is
+                when "0000" => G_HEX3 <= "1000000";
+                when "0001" => G_HEX3 <= "1111001";
+                when "0010" => G_HEX3 <= "0100100";
+                when "0011" => G_HEX3 <= "0110000";
+                when "0100" => G_HEX3 <= "0011001";
+                when "0101" => G_HEX3 <= "0010010";
+                when "0110" => G_HEX3 <= "0000010";
+                when "0111" => G_HEX3 <= "1011000";
+                when "1000" => G_HEX3 <= "0000000";
+                when "1001" => G_HEX3 <= "0010000";
+                when "1010" => G_HEX3 <= "0001000";
+                when "1011" => G_HEX3 <= "0000011";
+                when "1100" => G_HEX3 <= "1000110";
+                when "1101" => G_HEX3 <= "0100001";
+                when "1110" => G_HEX3 <= "0000110";
+                when others => G_HEX3 <= "0001110";
+            end case;
+
+            case hundredsB is
+                when "0000" => G_HEX2 <= "1000000";
+                when "0001" => G_HEX2 <= "1111001";
+                when "0010" => G_HEX2 <= "0100100";
+                when "0011" => G_HEX2 <= "0110000";
+                when "0100" => G_HEX2 <= "0011001";
+                when "0101" => G_HEX2 <= "0010010";
+                when "0110" => G_HEX2 <= "0000010";
+                when "0111" => G_HEX2 <= "1011000";
+                when "1000" => G_HEX2 <= "0000000";
+                when "1001" => G_HEX2 <= "0010000";
+                when "1010" => G_HEX2 <= "0001000";
+                when "1011" => G_HEX2 <= "0000011";
+                when "1100" => G_HEX2 <= "1000110";
+                when "1101" => G_HEX2 <= "0100001";
+                when "1110" => G_HEX2 <= "0000110";
+                when others => G_HEX2 <= "0001110";
+            end case;
             
-            thousandsA := "0000";
-            hundredsA  := "0000";
-            tensA      := "0000";
-            unitsA     := "0000";
-            thousandsB := "0000";
-            hundredsB  := "0000";
-            tensB      := "0000";
-            unitsB     := "0000";
-            a <= "0000000000000000";
-            b <= "0000000000000000";
+            case tensB is
+                when "0000" => G_HEX1 <= "1000000";
+                when "0001" => G_HEX1 <= "1111001";
+                when "0010" => G_HEX1 <= "0100100";
+                when "0011" => G_HEX1 <= "0110000";
+                when "0100" => G_HEX1 <= "0011001";
+                when "0101" => G_HEX1 <= "0010010";
+                when "0110" => G_HEX1 <= "0000010";
+                when "0111" => G_HEX1 <= "1011000";
+                when "1000" => G_HEX1 <= "0000000";
+                when "1001" => G_HEX1 <= "0010000";
+                when "1010" => G_HEX1 <= "0001000";
+                when "1011" => G_HEX1 <= "0000011";
+                when "1100" => G_HEX1 <= "1000110";
+                when "1101" => G_HEX1 <= "0100001";
+                when "1110" => G_HEX1 <= "0000110";
+                when others => G_HEX1 <= "0001110";
+            end case;
+            
+            case unitsB is
+                when "0000" => G_HEX0 <= "1000000";
+                when "0001" => G_HEX0 <= "1111001";
+                when "0010" => G_HEX0 <= "0100100";
+                when "0011" => G_HEX0 <= "0110000";
+                when "0100" => G_HEX0 <= "0011001";
+                when "0101" => G_HEX0 <= "0010010";
+                when "0110" => G_HEX0 <= "0000010";
+                when "0111" => G_HEX0 <= "1011000";
+                when "1000" => G_HEX0 <= "0000000";
+                when "1001" => G_HEX0 <= "0010000";
+                when "1010" => G_HEX0 <= "0001000";
+                when "1011" => G_HEX0 <= "0000011";
+                when "1100" => G_HEX0 <= "1000110";
+                when "1101" => G_HEX0 <= "0100001";
+                when "1110" => G_HEX0 <= "0000110";
+                when others => G_HEX0 <= "0001110";
+            end case;
 
-        end if;
+            -- Tables to convert the A input to 7-seg.
+            case thousandsA is
+                when "0000" => G_HEX7 <= "1000000";
+                when "0001" => G_HEX7 <= "1111001";
+                when "0010" => G_HEX7 <= "0100100";
+                when "0011" => G_HEX7 <= "0110000";
+                when "0100" => G_HEX7 <= "0011001";
+                when "0101" => G_HEX7 <= "0010010";
+                when "0110" => G_HEX7 <= "0000010";
+                when "0111" => G_HEX7 <= "1011000";
+                when "1000" => G_HEX7 <= "0000000";
+                when "1001" => G_HEX7 <= "0010000";
+                when "1010" => G_HEX7 <= "0001000";
+                when "1011" => G_HEX7 <= "0000011";
+                when "1100" => G_HEX7 <= "1000110";
+                when "1101" => G_HEX7 <= "0100001";
+                when "1110" => G_HEX7 <= "0000110";
+                when others => G_HEX7 <= "0001110";
+            end case;
 
-        -- Tables to convert the B input to 7-seg.
-        case thousandsB is
-            when "0000" => G_HEX3 <= "1000000";
-            when "0001" => G_HEX3 <= "1111001";
-            when "0010" => G_HEX3 <= "0100100";
-            when "0011" => G_HEX3 <= "0110000";
-            when "0100" => G_HEX3 <= "0011001";
-            when "0101" => G_HEX3 <= "0010010";
-            when "0110" => G_HEX3 <= "0000010";
-            when "0111" => G_HEX3 <= "1011000";
-            when "1000" => G_HEX3 <= "0000000";
-            when "1001" => G_HEX3 <= "0010000";
-            when "1010" => G_HEX3 <= "0001000";
-            when "1011" => G_HEX3 <= "0000011";
-            when "1100" => G_HEX3 <= "1000110";
-            when "1101" => G_HEX3 <= "0100001";
-            when "1110" => G_HEX3 <= "0000110";
-            when others => G_HEX3 <= "0001110";
-        end case;
-
-        case hundredsB is
-            when "0000" => G_HEX2 <= "1000000";
-            when "0001" => G_HEX2 <= "1111001";
-            when "0010" => G_HEX2 <= "0100100";
-            when "0011" => G_HEX2 <= "0110000";
-            when "0100" => G_HEX2 <= "0011001";
-            when "0101" => G_HEX2 <= "0010010";
-            when "0110" => G_HEX2 <= "0000010";
-            when "0111" => G_HEX2 <= "1011000";
-            when "1000" => G_HEX2 <= "0000000";
-            when "1001" => G_HEX2 <= "0010000";
-            when "1010" => G_HEX2 <= "0001000";
-            when "1011" => G_HEX2 <= "0000011";
-            when "1100" => G_HEX2 <= "1000110";
-            when "1101" => G_HEX2 <= "0100001";
-            when "1110" => G_HEX2 <= "0000110";
-            when others => G_HEX2 <= "0001110";
-        end case;
-        
-        case tensB is
-            when "0000" => G_HEX1 <= "1000000";
-            when "0001" => G_HEX1 <= "1111001";
-            when "0010" => G_HEX1 <= "0100100";
-            when "0011" => G_HEX1 <= "0110000";
-            when "0100" => G_HEX1 <= "0011001";
-            when "0101" => G_HEX1 <= "0010010";
-            when "0110" => G_HEX1 <= "0000010";
-            when "0111" => G_HEX1 <= "1011000";
-            when "1000" => G_HEX1 <= "0000000";
-            when "1001" => G_HEX1 <= "0010000";
-            when "1010" => G_HEX1 <= "0001000";
-            when "1011" => G_HEX1 <= "0000011";
-            when "1100" => G_HEX1 <= "1000110";
-            when "1101" => G_HEX1 <= "0100001";
-            when "1110" => G_HEX1 <= "0000110";
-            when others => G_HEX1 <= "0001110";
-        end case;
-        
-        case unitsB is
-            when "0000" => G_HEX0 <= "1000000";
-            when "0001" => G_HEX0 <= "1111001";
-            when "0010" => G_HEX0 <= "0100100";
-            when "0011" => G_HEX0 <= "0110000";
-            when "0100" => G_HEX0 <= "0011001";
-            when "0101" => G_HEX0 <= "0010010";
-            when "0110" => G_HEX0 <= "0000010";
-            when "0111" => G_HEX0 <= "1011000";
-            when "1000" => G_HEX0 <= "0000000";
-            when "1001" => G_HEX0 <= "0010000";
-            when "1010" => G_HEX0 <= "0001000";
-            when "1011" => G_HEX0 <= "0000011";
-            when "1100" => G_HEX0 <= "1000110";
-            when "1101" => G_HEX0 <= "0100001";
-            when "1110" => G_HEX0 <= "0000110";
-            when others => G_HEX0 <= "0001110";
-        end case;
-
-        -- Tables to convert the A input to 7-seg.
-        case thousandsA is
-            when "0000" => G_HEX7 <= "1000000";
-            when "0001" => G_HEX7 <= "1111001";
-            when "0010" => G_HEX7 <= "0100100";
-            when "0011" => G_HEX7 <= "0110000";
-            when "0100" => G_HEX7 <= "0011001";
-            when "0101" => G_HEX7 <= "0010010";
-            when "0110" => G_HEX7 <= "0000010";
-            when "0111" => G_HEX7 <= "1011000";
-            when "1000" => G_HEX7 <= "0000000";
-            when "1001" => G_HEX7 <= "0010000";
-            when "1010" => G_HEX7 <= "0001000";
-            when "1011" => G_HEX7 <= "0000011";
-            when "1100" => G_HEX7 <= "1000110";
-            when "1101" => G_HEX7 <= "0100001";
-            when "1110" => G_HEX7 <= "0000110";
-            when others => G_HEX7 <= "0001110";
-        end case;
-
-        case hundredsA is
-            when "0000" => G_HEX6 <= "1000000";
-            when "0001" => G_HEX6 <= "1111001";
-            when "0010" => G_HEX6 <= "0100100";
-            when "0011" => G_HEX6 <= "0110000";
-            when "0100" => G_HEX6 <= "0011001";
-            when "0101" => G_HEX6 <= "0010010";
-            when "0110" => G_HEX6 <= "0000010";
-            when "0111" => G_HEX6 <= "1011000";
-            when "1000" => G_HEX6 <= "0000000";
-            when "1001" => G_HEX6 <= "0010000";
-            when "1010" => G_HEX6 <= "0001000";
-            when "1011" => G_HEX6 <= "0000011";
-            when "1100" => G_HEX6 <= "1000110";
-            when "1101" => G_HEX6 <= "0100001";
-            when "1110" => G_HEX6 <= "0000110";
-            when others => G_HEX6 <= "0001110";
-        end case;
-        
-        case tensA is
-            when "0000" => G_HEX5 <= "1000000";
-            when "0001" => G_HEX5 <= "1111001";
-            when "0010" => G_HEX5 <= "0100100";
-            when "0011" => G_HEX5 <= "0110000";
-            when "0100" => G_HEX5 <= "0011001";
-            when "0101" => G_HEX5 <= "0010010";
-            when "0110" => G_HEX5 <= "0000010";
-            when "0111" => G_HEX5 <= "1011000";
-            when "1000" => G_HEX5 <= "0000000";
-            when "1001" => G_HEX5 <= "0010000";
-            when "1010" => G_HEX5 <= "0001000";
-            when "1011" => G_HEX5 <= "0000011";
-            when "1100" => G_HEX5 <= "1000110";
-            when "1101" => G_HEX5 <= "0100001";
-            when "1110" => G_HEX5 <= "0000110";
-            when others => G_HEX5 <= "0001110";
-        end case;
-        
-        case unitsA is
-            when "0000" => G_HEX4 <= "1000000";
-            when "0001" => G_HEX4 <= "1111001";
-            when "0010" => G_HEX4 <= "0100100";
-            when "0011" => G_HEX4 <= "0110000";
-            when "0100" => G_HEX4 <= "0011001";
-            when "0101" => G_HEX4 <= "0010010";
-            when "0110" => G_HEX4 <= "0000010";
-            when "0111" => G_HEX4 <= "1011000";
-            when "1000" => G_HEX4 <= "0000000";
-            when "1001" => G_HEX4 <= "0010000";
-            when "1010" => G_HEX4 <= "0001000";
-            when "1011" => G_HEX4 <= "0000011";
-            when "1100" => G_HEX4 <= "1000110";
-            when "1101" => G_HEX4 <= "0100001";
-            when "1110" => G_HEX4 <= "0000110";
-            when others => G_HEX4 <= "0001110";
-        end case;
-    end process;
+            case hundredsA is
+                when "0000" => G_HEX6 <= "1000000";
+                when "0001" => G_HEX6 <= "1111001";
+                when "0010" => G_HEX6 <= "0100100";
+                when "0011" => G_HEX6 <= "0110000";
+                when "0100" => G_HEX6 <= "0011001";
+                when "0101" => G_HEX6 <= "0010010";
+                when "0110" => G_HEX6 <= "0000010";
+                when "0111" => G_HEX6 <= "1011000";
+                when "1000" => G_HEX6 <= "0000000";
+                when "1001" => G_HEX6 <= "0010000";
+                when "1010" => G_HEX6 <= "0001000";
+                when "1011" => G_HEX6 <= "0000011";
+                when "1100" => G_HEX6 <= "1000110";
+                when "1101" => G_HEX6 <= "0100001";
+                when "1110" => G_HEX6 <= "0000110";
+                when others => G_HEX6 <= "0001110";
+            end case;
+            
+            case tensA is
+                when "0000" => G_HEX5 <= "1000000";
+                when "0001" => G_HEX5 <= "1111001";
+                when "0010" => G_HEX5 <= "0100100";
+                when "0011" => G_HEX5 <= "0110000";
+                when "0100" => G_HEX5 <= "0011001";
+                when "0101" => G_HEX5 <= "0010010";
+                when "0110" => G_HEX5 <= "0000010";
+                when "0111" => G_HEX5 <= "1011000";
+                when "1000" => G_HEX5 <= "0000000";
+                when "1001" => G_HEX5 <= "0010000";
+                when "1010" => G_HEX5 <= "0001000";
+                when "1011" => G_HEX5 <= "0000011";
+                when "1100" => G_HEX5 <= "1000110";
+                when "1101" => G_HEX5 <= "0100001";
+                when "1110" => G_HEX5 <= "0000110";
+                when others => G_HEX5 <= "0001110";
+            end case;
+            
+            case unitsA is
+                when "0000" => G_HEX4 <= "1000000";
+                when "0001" => G_HEX4 <= "1111001";
+                when "0010" => G_HEX4 <= "0100100";
+                when "0011" => G_HEX4 <= "0110000";
+                when "0100" => G_HEX4 <= "0011001";
+                when "0101" => G_HEX4 <= "0010010";
+                when "0110" => G_HEX4 <= "0000010";
+                when "0111" => G_HEX4 <= "1011000";
+                when "1000" => G_HEX4 <= "0000000";
+                when "1001" => G_HEX4 <= "0010000";
+                when "1010" => G_HEX4 <= "0001000";
+                when "1011" => G_HEX4 <= "0000011";
+                when "1100" => G_HEX4 <= "1000110";
+                when "1101" => G_HEX4 <= "0100001";
+                when "1110" => G_HEX4 <= "0000110";
+                when others => G_HEX4 <= "0001110";
+            end case;
+        end process;
 end architecture;
