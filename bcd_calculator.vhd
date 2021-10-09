@@ -36,6 +36,7 @@ architecture bcd_calculator_test of bcd_calculator is
     -- These will be used to store the outputs from each of the operations.
     signal additionResult:          std_logic_vector (15 downto 0) := "0000000000000000";
     signal multiplicationResult:    std_logic_vector (31 downto 0) := "00000000000000000000000000000000";
+    signal carryOutAdder:           std_logic                      := '0';
 
     -- This will be used to store a and b input itself.
     signal a: std_logic_vector (15 downto 0) := "0000000000000000";
@@ -50,7 +51,7 @@ begin
         x => a,
         y => b,
         z => additionResult,
-        carry_out => open
+        carry_out => carryOutAdder
     );
 
     -- Importing the n-bit multiplier from another vhdl file.
@@ -152,7 +153,6 @@ begin
         variable tensInputB:                                std_logic_vector (3 downto 0) := "0000";
         variable unitsInputB:                               std_logic_vector (3 downto 0) := "0000";
 
-        variable hundredsThousandsAdditionOutput:           std_logic_vector (3 downto 0) := "0000";
         variable tensThousandsAdditionOutput:               std_logic_vector (3 downto 0) := "0000";
         variable thousandsAdditionOutput:                   std_logic_vector (3 downto 0) := "0000";
         variable hundredsAdditionOutput:                    std_logic_vector (3 downto 0) := "0000";
@@ -168,8 +168,8 @@ begin
         variable tensMultiplicationOutput:                  std_logic_vector (3 downto 0) := "0000";
         variable unitsMultiplicationOutput:                 std_logic_vector (3 downto 0) := "0000";
 
-        variable tempVectorAdditionOutput:                  std_logic_vector (39 downto 0) := "0000000000000000000000000000000000000000";
-        variable tempVectorMultiplicationOutput:            std_logic_vector (59 downto 0) := "000000000000000000000000000000000000000000000000000000000000";
+        variable tempVectorAdditionOutput:                  std_logic_vector (15 downto 0) := "0000000000000000";
+        variable tempVectorMultiplicationOutput:            std_logic_vector (31 downto 0) := "00000000000000000000000000000000";
         variable tempVectorInput:                           std_logic_vector (15 downto 0) := "0000000000000000";
 
         begin
@@ -191,13 +191,14 @@ begin
                 tensInputB                              := "0000";
                 unitsInputB                             := "0000";
 
-                hundredsThousandsAdditionOutput:        := "0000";
                 tensThousandsAdditionOutput:            := "0000";
                 thousandsAdditionOutput:                := "0000";
                 hundredsAdditionOutput:                 := "0000";
                 tensAdditionOutput:                     := "0000";
                 unitsAdditionOutput:                    := "0000";
 
+                tensMillionsMultiplicationOutput:       := "0000";
+                millionsMultiplicationOutput:           := "0000";
                 hundredsThousandsMultiplicationOutput:  := "0000";
                 tensThousandsMultiplicationOutput:      := "0000";
                 thousandsMultiplicationOutput:          := "0000";
@@ -211,48 +212,52 @@ begin
 
             if storeA = '1' and storeB = '1' and V_SW (17) = '1' then
                 
-                    
-                for i in 0 to 59 loop
-                    tempVectorMultiplicationOutput (i) := '0';
-                end loop;
-                tempVectorMultiplicationOutput (15 downto 0) := multiplicationResult;
+                tensMillionsMultiplicationOutput:      := multiplicationResult (31 downto 28);
+                millionsMultiplicationOutput:          := multiplicationResult (27 downto 24);
+                hundredsThousandsMultiplicationOutput: := multiplicationResult (23 downto 20);
+                tensThousandsMultiplicationOutput:     := multiplicationResult (19 downto 16);
+                thousandsMultiplicationOutput:         := multiplicationResult (15 downto 12);
+                hundredsMultiplicationOutput:          := multiplicationResult (11 downto 8);
+                tensMultiplicationOutput:              := multiplicationResult (7 downto 4);
+                unitsMultiplicationOutput:             := multiplicationResult (3 downto 0);
 
-                for i in 0 to 39 loop
+                case tensMillionsMultiplicationOutput is
+                    when "0000" => G_HEX7 <= "1000000";
+                    when "0001" => G_HEX7 <= "1111001";
+                    when "0010" => G_HEX7 <= "0100100";
+                    when "0011" => G_HEX7 <= "0110000";
+                    when "0100" => G_HEX7 <= "0011001";
+                    when "0101" => G_HEX7 <= "0010010";
+                    when "0110" => G_HEX7 <= "0000010";
+                    when "0111" => G_HEX7 <= "1011000";
+                    when "1000" => G_HEX7 <= "0000000";
+                    when "1001" => G_HEX7 <= "0010000";
+                    when "1010" => G_HEX7 <= "0001000";
+                    when "1011" => G_HEX7 <= "0000011";
+                    when "1100" => G_HEX7 <= "1000110";
+                    when "1101" => G_HEX7 <= "0100001";
+                    when "1110" => G_HEX7 <= "0000110";
+                    when others => G_HEX7 <= "0001110";
+                end case;
 
-                    if tempVectorMultiplicationOutput (19 downto 16) > 4 then
-                        tempVectorMultiplicationOutput (19 downto 16) := tempVectorMultiplicationOutput (19 downto 16) + 3;
-                    end if;
-
-                    if tempVectorMultiplicationOutput (23 downto 21) > 4 then
-                        tempVectorMultiplicationOutput (23 downto 21) := tempVectorMultiplicationOutput (23 downto 21) + 3;
-                    end if;
-
-                    if tempVectorMultiplicationOutput (27 downto 24) > 4 then
-                        tempVectorMultiplicationOutput (27 downto 24) := tempVectorMultiplicationOutput (27 downto 24) + 3;
-                    end if;
-
-                    if tempVectorMultiplicationOutput (31 downto 28) > 4 then
-                        tempVectorMultiplicationOutput (31 downto 28) := tempVectorMultiplicationOutput (31 downto 28) + 3;
-                    end if;
-
-                    if tempVectorMultiplicationOutput (35 downto 32) > 4 then
-                        tempVectorMultiplicationOutput (35 downto 32) := tempVectorMultiplicationOutput (35 downto 32) + 3;
-                    end if;
-
-                    if tempVectorMultiplicationOutput (39 downto 36) > 4 then
-                        tempVectorMultiplicationOutput (39 downto 36) := tempVectorMultiplicationOutput (39 downto 36) + 3;
-                    end if;
-
-                    tempVectorMultiplicationOutput (39 downto 1) := tempVectorMultiplicationOutput (38 downto 0);
-
-                end loop;
-
-                hundredsThousandsMultiplicationOutput: := tempVectorMultiplicationOutput (39 downto 36);
-                tensThousandsMultiplicationOutput:     := tempVectorMultiplicationOutput (35 downto 32);
-                thousandsMultiplicationOutput:         := tempVectorMultiplicationOutput (31 downto 28);
-                hundredsMultiplicationOutput:          := tempVectorMultiplicationOutput (27 downto 24);
-                tensMultiplicationOutput:              := tempVectorMultiplicationOutput (23 downto 20);
-                unitsMultiplicationOutput:             := tempVectorMultiplicationOutput (19 downto 16);
+                case millionsMultiplicationOutput is
+                    when "0000" => G_HEX6 <= "1000000";
+                    when "0001" => G_HEX6 <= "1111001";
+                    when "0010" => G_HEX6 <= "0100100";
+                    when "0011" => G_HEX6 <= "0110000";
+                    when "0100" => G_HEX6 <= "0011001";
+                    when "0101" => G_HEX6 <= "0010010";
+                    when "0110" => G_HEX6 <= "0000010";
+                    when "0111" => G_HEX6 <= "1011000";
+                    when "1000" => G_HEX6 <= "0000000";
+                    when "1001" => G_HEX6 <= "0010000";
+                    when "1010" => G_HEX6 <= "0001000";
+                    when "1011" => G_HEX6 <= "0000011";
+                    when "1100" => G_HEX6 <= "1000110";
+                    when "1101" => G_HEX6 <= "0100001";
+                    when "1110" => G_HEX6 <= "0000110";
+                    when others => G_HEX6 <= "0001110";
+                end case;
 
                 case hundredsThousandsOutput is
                     when "0000" => G_HEX5 <= "1000000";
@@ -368,90 +373,21 @@ begin
                     when others => G_HEX0 <= "0001110";
                 end case;
 
-            if storeA = '1' and storeB = '1' and V_SW (16) = '1' then
-                
-                    
-                for i in 0 to 39 loop
-                    tempVectorOutput (i) := '0';
-                end loop;
-                tempVectorOutput (15 downto 0) := additionResult;
+            else if storeA = '1' and storeB = '1' and V_SW (16) = '1' then
 
-                for i in 0 to 39 loop
+                tensThousandsAdditionOutput     := carryOutAdder;
+                thousandsAdditionOutput         := additionResult (15 downto 12);
+                hundredsAdditionOutput          := additionResult (11 downto 8);
+                tensAdditionOutput              := additionResult (7 downto 4);
+                unitsAdditionOutput             := additionResult (3 downto 0);
 
-                    if tempVectorOutput (19 downto 16) > 4 then
-                        tempVectorOutput (19 downto 16) := tempVectorOutput (19 downto 16) + 3;
-                    end if;
-
-                    if tempVectorOutput (23 downto 21) > 4 then
-                        tempVectorOutput (23 downto 21) := tempVectorOutput (23 downto 21) + 3;
-                    end if;
-
-                    if tempVectorOutput (27 downto 24) > 4 then
-                        tempVectorOutput (27 downto 24) := tempVectorOutput (27 downto 24) + 3;
-                    end if;
-
-                    if tempVectorOutput (31 downto 28) > 4 then
-                        tempVectorOutput (31 downto 28) := tempVectorOutput (31 downto 28) + 3;
-                    end if;
-
-                    if tempVectorOutput (35 downto 32) > 4 then
-                        tempVectorOutput (35 downto 32) := tempVectorOutput (35 downto 32) + 3;
-                    end if;
-
-                    if tempVectorOutput (39 downto 36) > 4 then
-                        tempVectorOutput (39 downto 36) := tempVectorOutput (39 downto 36) + 3;
-                    end if;
-
-                    tempVectorOutput (39 downto 1) := tempVectorOutput (38 downto 0);
-
-                end loop;
-
-                hundredsThousandsOutput := tempVectorOutput (39 downto 36);
-                tensThousandsOutput     := tempVectorOutput (35 downto 32);
-                thousandsOutput         := tempVectorOutput (31 downto 28);
-                hundredsOutput          := tempVectorOutput (27 downto 24);
-                tensOutput              := tempVectorOutput (23 downto 20);
-                unitsOutput             := tempVectorOutput (19 downto 16);
-
-                case hundredsThousandsOutput is
-                    when "0000" => G_HEX5 <= "1000000";
-                    when "0001" => G_HEX5 <= "1111001";
-                    when "0010" => G_HEX5 <= "0100100";
-                    when "0011" => G_HEX5 <= "0110000";
-                    when "0100" => G_HEX5 <= "0011001";
-                    when "0101" => G_HEX5 <= "0010010";
-                    when "0110" => G_HEX5 <= "0000010";
-                    when "0111" => G_HEX5 <= "1011000";
-                    when "1000" => G_HEX5 <= "0000000";
-                    when "1001" => G_HEX5 <= "0010000";
-                    when "1010" => G_HEX5 <= "0001000";
-                    when "1011" => G_HEX5 <= "0000011";
-                    when "1100" => G_HEX5 <= "1000110";
-                    when "1101" => G_HEX5 <= "0100001";
-                    when "1110" => G_HEX5 <= "0000110";
-                    when others => G_HEX5 <= "0001110";
-                end case;
-
-                case tensThousandsOutput is
+                case tensThousandsAdditionOutput is
                     when "0000" => G_HEX4 <= "1000000";
                     when "0001" => G_HEX4 <= "1111001";
-                    when "0010" => G_HEX4 <= "0100100";
-                    when "0011" => G_HEX4 <= "0110000";
-                    when "0100" => G_HEX4 <= "0011001";
-                    when "0101" => G_HEX4 <= "0010010";
-                    when "0110" => G_HEX4 <= "0000010";
-                    when "0111" => G_HEX4 <= "1011000";
-                    when "1000" => G_HEX4 <= "0000000";
-                    when "1001" => G_HEX4 <= "0010000";
-                    when "1010" => G_HEX4 <= "0001000";
-                    when "1011" => G_HEX4 <= "0000011";
-                    when "1100" => G_HEX4 <= "1000110";
-                    when "1101" => G_HEX4 <= "0100001";
-                    when "1110" => G_HEX4 <= "0000110";
                     when others => G_HEX4 <= "0001110";
                 end case;
 
-                case thousandsOutput is
+                case thousandsAdditionOutput is
                     when "0000" => G_HEX3 <= "1000000";
                     when "0001" => G_HEX3 <= "1111001";
                     when "0010" => G_HEX3 <= "0100100";
@@ -470,7 +406,7 @@ begin
                     when others => G_HEX3 <= "0001110";
                 end case;
 
-                case hundredsOutput is
+                case hundredsAdditionOutput is
                     when "0000" => G_HEX2 <= "1000000";
                     when "0001" => G_HEX2 <= "1111001";
                     when "0010" => G_HEX2 <= "0100100";
@@ -489,7 +425,7 @@ begin
                     when others => G_HEX2 <= "0001110";
                 end case;
                 
-                case tensOutput is
+                case tensAdditionOutput is
                     when "0000" => G_HEX1 <= "1000000";
                     when "0001" => G_HEX1 <= "1111001";
                     when "0010" => G_HEX1 <= "0100100";
@@ -508,7 +444,7 @@ begin
                     when others => G_HEX1 <= "0001110";
                 end case;
                 
-                case unitsOutput is
+                case unitsAdditionOutput is
                     when "0000" => G_HEX0 <= "1000000";
                     when "0001" => G_HEX0 <= "1111001";
                     when "0010" => G_HEX0 <= "0100100";
