@@ -31,7 +31,7 @@ architecture bcd_calculator_test of bcd_calculator is
     signal resetTrigger: std_logic := '0';
 
     -- This will be used to start all displays with the 0 digit.
-    signal clearDisplay: std_logic := '1';
+    signal clearEverything: std_logic := '1';
 
     -- This will be used to detect when the 7-seg display has cleares it's output after the reset.
     signal updatedDisplay: std_logic := '0';
@@ -184,7 +184,7 @@ begin
 
             updatedDisplay      <= '0'; 
 
-            if clearDisplay = '1' then
+            if clearEverything = '1' then
 
                 G_HEX7 <= "1000000";
                 G_HEX6 <= "1000000";
@@ -195,12 +195,41 @@ begin
                 G_HEX1 <= "1000000";
                 G_HEX0 <= "1000000";
 
-                clearDisplay <= '0';
+                tempVectorInputA                        := "0000000000000000";
+                tempVectorInputB                        := "0000000000000000";
+                a                                       <= "0000000000000000";
+                b                                       <= "0000000000000000";
+                
+                thousandsInputA                         := "0000";
+                hundredsInputA                          := "0000";
+                tensInputA                              := "0000";
+                unitsInputA                             := "0000";
+                thousandsInputB                         := "0000";
+                hundredsInputB                          := "0000";
+                tensInputB                              := "0000";
+                unitsInputB                             := "0000";
+
+                tensThousandsAdditionOutput             := '0';
+                thousandsAdditionOutput                 := "0000";
+                hundredsAdditionOutput                  := "0000";
+                tensAdditionOutput                      := "0000";
+                unitsAdditionOutput                     := "0000";
+
+                tensMillionsMultiplicationOutput        := "0000";
+                millionsMultiplicationOutput            := "0000";
+                hundredsThousandsMultiplicationOutput   := "0000";
+                tensThousandsMultiplicationOutput       := "0000";
+                thousandsMultiplicationOutput           := "0000";
+                hundredsMultiplicationOutput            := "0000";
+                tensMultiplicationOutput                := "0000";
+                unitsMultiplicationOutput               := "0000";
+                startMultiplication                     <= '0';
+
+                clearEverything <= '0';
 
             end if;
 
             if resetTrigger = '1' then
-
 
                 updatedDisplay                          <= '1';
                 tempVectorInputA                        := "0000000000000000";
@@ -360,15 +389,14 @@ begin
 
             elsif storeA = '1' and storeB = '1' and V_SW (16) = '1' then
 
-                tensThousandsAdditionOutput     := carryOutAdder;
                 thousandsAdditionOutput         := additionResult (15 downto 12);
                 hundredsAdditionOutput          := additionResult (11 downto 8);
                 tensAdditionOutput              := additionResult (7 downto 4);
                 unitsAdditionOutput             := additionResult (3 downto 0);
+                tensThousandsAdditionOutput     := carryOutAdder;
 
                 case tensThousandsAdditionOutput is
-                    when '0'    => G_HEX4 <= "1000000";
-                    when '1'    => G_HEX4 <= "1111001";
+                    when "1"    => G_HEX4 <= "1111001";
                     when others => G_HEX4 <= "1000000";
                 end case;
 
@@ -427,6 +455,10 @@ begin
                     when "1001" => G_HEX0 <= "0010000";
                     when others => G_HEX0 <= "1000000";
                 end case;
+
+                G_HEX7 <= "1000000";
+                G_HEX6 <= "1000000";
+                G_HEX5 <= "1000000";
 
             else 
 
