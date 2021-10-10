@@ -37,7 +37,7 @@ architecture bcd_calculator_test of bcd_calculator is
     signal updatedDisplay: std_logic := '0';
 
     -- These will be used to store the outputs from each of the operations.
-    signal additionResult:          std_logic_vector (15 downto 0) := "0000000000000000";
+    signal additionResult:          std_logic_vector (31 downto 0) := "00000000000000000000000000000000";
     signal multiplicationResult:    std_logic_vector (31 downto 0) := "00000000000000000000000000000000";
     signal carryOutAdder:           std_logic                      := '0';
 
@@ -56,7 +56,7 @@ begin
     port map (
         x => a,
         y => b,
-        z => additionResult,
+        z => additionResult (15 downto 0),
         carry_out => carryOutAdder
     );
 
@@ -396,8 +396,9 @@ begin
                 tensThousandsAdditionOutput     := carryOutAdder;
 
                 case tensThousandsAdditionOutput is
-                    when "1"    => G_HEX4 <= "1111001";
-                    when others => G_HEX4 <= "1000000";
+                    when '1'    => G_HEX4 <= "1111001";
+                    when '0'    => G_HEX4 <= "1000000";
+                    when others => G_HEX4 <= "1111111";
                 end case;
 
                 case thousandsAdditionOutput is

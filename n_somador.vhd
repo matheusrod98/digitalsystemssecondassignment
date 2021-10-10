@@ -35,11 +35,11 @@ BEGIN
 				 b => y(4*i+3 DOWNTO 4*i),       
 				 c => z1(4*i+3 DOWNTO 4*i),       
 				 cy_in => carries(i),       
-				 cy_out => carries(i+1));     
+				 cy_out => carries(i+1));
 END GENERATE;
    
 	z<=z1  ;
-	carry_out <= oc XOR '0';   
+	carry_out <= carries (n - 1); 
 	
 	END teste;
 			
