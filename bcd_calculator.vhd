@@ -30,6 +30,9 @@ architecture bcd_calculator_test of bcd_calculator is
     -- This will be used to trigger the reset function.
     signal resetTrigger: std_logic := '0';
 
+    -- This will be used to start all displays with the 0 digit.
+    signal clearDisplay: std_logic := '1';
+
     -- This will be used to detect when the 7-seg display has cleares it's output after the reset.
     signal updatedDisplay: std_logic := '0';
 
@@ -181,6 +184,21 @@ begin
 
             updatedDisplay      <= '0'; 
 
+            if clearDisplay = '1' then
+
+                G_HEX7 <= "1000000";
+                G_HEX6 <= "1000000";
+                G_HEX5 <= "1000000";
+                G_HEX4 <= "1000000";
+                G_HEX3 <= "1000000";
+                G_HEX2 <= "1000000";
+                G_HEX1 <= "1000000";
+                G_HEX0 <= "1000000";
+
+                clearDisplay <= '0';
+
+            end if;
+
             if resetTrigger = '1' then
 
 
@@ -239,12 +257,7 @@ begin
                     when "0111" => G_HEX7 <= "1011000";
                     when "1000" => G_HEX7 <= "0000000";
                     when "1001" => G_HEX7 <= "0010000";
-                    when "1010" => G_HEX7 <= "0001000";
-                    when "1011" => G_HEX7 <= "0000011";
-                    when "1100" => G_HEX7 <= "1000110";
-                    when "1101" => G_HEX7 <= "0100001";
-                    when "1110" => G_HEX7 <= "0000110";
-                    when others => G_HEX7 <= "0001110";
+                    when others => G_HEX7 <= "1000000";
                 end case;
 
                 case millionsMultiplicationOutput is
@@ -258,12 +271,7 @@ begin
                     when "0111" => G_HEX6 <= "1011000";
                     when "1000" => G_HEX6 <= "0000000";
                     when "1001" => G_HEX6 <= "0010000";
-                    when "1010" => G_HEX6 <= "0001000";
-                    when "1011" => G_HEX6 <= "0000011";
-                    when "1100" => G_HEX6 <= "1000110";
-                    when "1101" => G_HEX6 <= "0100001";
-                    when "1110" => G_HEX6 <= "0000110";
-                    when others => G_HEX6 <= "0001110";
+                    when others => G_HEX6 <= "1000000";
                 end case;
 
                 case hundredsThousandsMultiplicationOutput is
@@ -277,12 +285,7 @@ begin
                     when "0111" => G_HEX5 <= "1011000";
                     when "1000" => G_HEX5 <= "0000000";
                     when "1001" => G_HEX5 <= "0010000";
-                    when "1010" => G_HEX5 <= "0001000";
-                    when "1011" => G_HEX5 <= "0000011";
-                    when "1100" => G_HEX5 <= "1000110";
-                    when "1101" => G_HEX5 <= "0100001";
-                    when "1110" => G_HEX5 <= "0000110";
-                    when others => G_HEX5 <= "0001110";
+                    when others => G_HEX5 <= "1000000";
                 end case;
 
                 case tensThousandsMultiplicationOutput is
@@ -296,12 +299,7 @@ begin
                     when "0111" => G_HEX4 <= "1011000";
                     when "1000" => G_HEX4 <= "0000000";
                     when "1001" => G_HEX4 <= "0010000";
-                    when "1010" => G_HEX4 <= "0001000";
-                    when "1011" => G_HEX4 <= "0000011";
-                    when "1100" => G_HEX4 <= "1000110";
-                    when "1101" => G_HEX4 <= "0100001";
-                    when "1110" => G_HEX4 <= "0000110";
-                    when others => G_HEX4 <= "0001110";
+                    when others => G_HEX4 <= "1000000";
                 end case;
 
                 case thousandsMultiplicationOutput is
@@ -315,12 +313,7 @@ begin
                     when "0111" => G_HEX3 <= "1011000";
                     when "1000" => G_HEX3 <= "0000000";
                     when "1001" => G_HEX3 <= "0010000";
-                    when "1010" => G_HEX3 <= "0001000";
-                    when "1011" => G_HEX3 <= "0000011";
-                    when "1100" => G_HEX3 <= "1000110";
-                    when "1101" => G_HEX3 <= "0100001";
-                    when "1110" => G_HEX3 <= "0000110";
-                    when others => G_HEX3 <= "0001110";
+                    when others => G_HEX3 <= "1000000";
                 end case;
 
                 case hundredsMultiplicationOutput is
@@ -334,12 +327,7 @@ begin
                     when "0111" => G_HEX2 <= "1011000";
                     when "1000" => G_HEX2 <= "0000000";
                     when "1001" => G_HEX2 <= "0010000";
-                    when "1010" => G_HEX2 <= "0001000";
-                    when "1011" => G_HEX2 <= "0000011";
-                    when "1100" => G_HEX2 <= "1000110";
-                    when "1101" => G_HEX2 <= "0100001";
-                    when "1110" => G_HEX2 <= "0000110";
-                    when others => G_HEX2 <= "0001110";
+                    when others => G_HEX2 <= "1000000";
                 end case;
                 
                 case tensMultiplicationOutput is
@@ -353,12 +341,7 @@ begin
                     when "0111" => G_HEX1 <= "1011000";
                     when "1000" => G_HEX1 <= "0000000";
                     when "1001" => G_HEX1 <= "0010000";
-                    when "1010" => G_HEX1 <= "0001000";
-                    when "1011" => G_HEX1 <= "0000011";
-                    when "1100" => G_HEX1 <= "1000110";
-                    when "1101" => G_HEX1 <= "0100001";
-                    when "1110" => G_HEX1 <= "0000110";
-                    when others => G_HEX1 <= "0001110";
+                    when others => G_HEX1 <= "1000000";
                 end case;
                 
                 case unitsMultiplicationOutput is
@@ -372,12 +355,7 @@ begin
                     when "0111" => G_HEX0 <= "1011000";
                     when "1000" => G_HEX0 <= "0000000";
                     when "1001" => G_HEX0 <= "0010000";
-                    when "1010" => G_HEX0 <= "0001000";
-                    when "1011" => G_HEX0 <= "0000011";
-                    when "1100" => G_HEX0 <= "1000110";
-                    when "1101" => G_HEX0 <= "0100001";
-                    when "1110" => G_HEX0 <= "0000110";
-                    when others => G_HEX0 <= "0001110";
+                    when others => G_HEX0 <= "1000000";
                 end case;
 
             elsif storeA = '1' and storeB = '1' and V_SW (16) = '1' then
@@ -391,7 +369,7 @@ begin
                 case tensThousandsAdditionOutput is
                     when '0'    => G_HEX4 <= "1000000";
                     when '1'    => G_HEX4 <= "1111001";
-                    when others => G_HEX4 <= "0001110";
+                    when others => G_HEX4 <= "1000000";
                 end case;
 
                 case thousandsAdditionOutput is
@@ -405,12 +383,7 @@ begin
                     when "0111" => G_HEX3 <= "1011000";
                     when "1000" => G_HEX3 <= "0000000";
                     when "1001" => G_HEX3 <= "0010000";
-                    when "1010" => G_HEX3 <= "0001000";
-                    when "1011" => G_HEX3 <= "0000011";
-                    when "1100" => G_HEX3 <= "1000110";
-                    when "1101" => G_HEX3 <= "0100001";
-                    when "1110" => G_HEX3 <= "0000110";
-                    when others => G_HEX3 <= "0001110";
+                    when others => G_HEX3 <= "1000000";
                 end case;
 
                 case hundredsAdditionOutput is
@@ -424,12 +397,7 @@ begin
                     when "0111" => G_HEX2 <= "1011000";
                     when "1000" => G_HEX2 <= "0000000";
                     when "1001" => G_HEX2 <= "0010000";
-                    when "1010" => G_HEX2 <= "0001000";
-                    when "1011" => G_HEX2 <= "0000011";
-                    when "1100" => G_HEX2 <= "1000110";
-                    when "1101" => G_HEX2 <= "0100001";
-                    when "1110" => G_HEX2 <= "0000110";
-                    when others => G_HEX2 <= "0001110";
+                    when others => G_HEX2 <= "1000000";
                 end case;
                 
                 case tensAdditionOutput is
@@ -443,12 +411,7 @@ begin
                     when "0111" => G_HEX1 <= "1011000";
                     when "1000" => G_HEX1 <= "0000000";
                     when "1001" => G_HEX1 <= "0010000";
-                    when "1010" => G_HEX1 <= "0001000";
-                    when "1011" => G_HEX1 <= "0000011";
-                    when "1100" => G_HEX1 <= "1000110";
-                    when "1101" => G_HEX1 <= "0100001";
-                    when "1110" => G_HEX1 <= "0000110";
-                    when others => G_HEX1 <= "0001110";
+                    when others => G_HEX1 <= "1000000";
                 end case;
                 
                 case unitsAdditionOutput is
@@ -462,12 +425,7 @@ begin
                     when "0111" => G_HEX0 <= "1011000";
                     when "1000" => G_HEX0 <= "0000000";
                     when "1001" => G_HEX0 <= "0010000";
-                    when "1010" => G_HEX0 <= "0001000";
-                    when "1011" => G_HEX0 <= "0000011";
-                    when "1100" => G_HEX0 <= "1000110";
-                    when "1101" => G_HEX0 <= "0100001";
-                    when "1110" => G_HEX0 <= "0000110";
-                    when others => G_HEX0 <= "0001110";
+                    when others => G_HEX0 <= "1000000";
                 end case;
 
             else 
@@ -514,12 +472,7 @@ begin
                     when "0111" => G_HEX3 <= "1011000";
                     when "1000" => G_HEX3 <= "0000000";
                     when "1001" => G_HEX3 <= "0010000";
-                    when "1010" => G_HEX3 <= "0001000";
-                    when "1011" => G_HEX3 <= "0000011";
-                    when "1100" => G_HEX3 <= "1000110";
-                    when "1101" => G_HEX3 <= "0100001";
-                    when "1110" => G_HEX3 <= "0000110";
-                    when others => G_HEX3 <= "0001110";
+                    when others => G_HEX3 <= "1000000";
                 end case;
 
                 case hundredsInputB is
@@ -533,12 +486,7 @@ begin
                     when "0111" => G_HEX2 <= "1011000";
                     when "1000" => G_HEX2 <= "0000000";
                     when "1001" => G_HEX2 <= "0010000";
-                    when "1010" => G_HEX2 <= "0001000";
-                    when "1011" => G_HEX2 <= "0000011";
-                    when "1100" => G_HEX2 <= "1000110";
-                    when "1101" => G_HEX2 <= "0100001";
-                    when "1110" => G_HEX2 <= "0000110";
-                    when others => G_HEX2 <= "0001110";
+                    when others => G_HEX2 <= "1000000";
                 end case;
                 
                 case tensInputB is
@@ -552,12 +500,7 @@ begin
                     when "0111" => G_HEX1 <= "1011000";
                     when "1000" => G_HEX1 <= "0000000";
                     when "1001" => G_HEX1 <= "0010000";
-                    when "1010" => G_HEX1 <= "0001000";
-                    when "1011" => G_HEX1 <= "0000011";
-                    when "1100" => G_HEX1 <= "1000110";
-                    when "1101" => G_HEX1 <= "0100001";
-                    when "1110" => G_HEX1 <= "0000110";
-                    when others => G_HEX1 <= "0001110";
+                    when others => G_HEX1 <= "1000000";
                 end case;
                 
                 case unitsInputB is
@@ -571,12 +514,7 @@ begin
                     when "0111" => G_HEX0 <= "1011000";
                     when "1000" => G_HEX0 <= "0000000";
                     when "1001" => G_HEX0 <= "0010000";
-                    when "1010" => G_HEX0 <= "0001000";
-                    when "1011" => G_HEX0 <= "0000011";
-                    when "1100" => G_HEX0 <= "1000110";
-                    when "1101" => G_HEX0 <= "0100001";
-                    when "1110" => G_HEX0 <= "0000110";
-                    when others => G_HEX0 <= "0001110";
+                    when others => G_HEX0 <= "1000000";
                 end case;
 
                 -- Tables to convert the A input to 7-seg.
@@ -591,12 +529,7 @@ begin
                     when "0111" => G_HEX7 <= "1011000";
                     when "1000" => G_HEX7 <= "0000000";
                     when "1001" => G_HEX7 <= "0010000";
-                    when "1010" => G_HEX7 <= "0001000";
-                    when "1011" => G_HEX7 <= "0000011";
-                    when "1100" => G_HEX7 <= "1000110";
-                    when "1101" => G_HEX7 <= "0100001";
-                    when "1110" => G_HEX7 <= "0000110";
-                    when others => G_HEX7 <= "0001110";
+                    when others => G_HEX7 <= "1000000";
                 end case;
 
                 case hundredsInputA is
@@ -610,12 +543,7 @@ begin
                     when "0111" => G_HEX6 <= "1011000";
                     when "1000" => G_HEX6 <= "0000000";
                     when "1001" => G_HEX6 <= "0010000";
-                    when "1010" => G_HEX6 <= "0001000";
-                    when "1011" => G_HEX6 <= "0000011";
-                    when "1100" => G_HEX6 <= "1000110";
-                    when "1101" => G_HEX6 <= "0100001";
-                    when "1110" => G_HEX6 <= "0000110";
-                    when others => G_HEX6 <= "0001110";
+                    when others => G_HEX6 <= "1000000";
                 end case;
                 
                 case tensInputA is
@@ -629,12 +557,7 @@ begin
                     when "0111" => G_HEX5 <= "1011000";
                     when "1000" => G_HEX5 <= "0000000";
                     when "1001" => G_HEX5 <= "0010000";
-                    when "1010" => G_HEX5 <= "0001000";
-                    when "1011" => G_HEX5 <= "0000011";
-                    when "1100" => G_HEX5 <= "1000110";
-                    when "1101" => G_HEX5 <= "0100001";
-                    when "1110" => G_HEX5 <= "0000110";
-                    when others => G_HEX5 <= "0001110";
+                    when others => G_HEX5 <= "1000000";
                 end case;
                 
                 case unitsInputA is
@@ -648,12 +571,7 @@ begin
                     when "0111" => G_HEX4 <= "1011000";
                     when "1000" => G_HEX4 <= "0000000";
                     when "1001" => G_HEX4 <= "0010000";
-                    when "1010" => G_HEX4 <= "0001000";
-                    when "1011" => G_HEX4 <= "0000011";
-                    when "1100" => G_HEX4 <= "1000110";
-                    when "1101" => G_HEX4 <= "0100001";
-                    when "1110" => G_HEX4 <= "0000110";
-                    when others => G_HEX4 <= "0001110";
+                    when others => G_HEX4 <= "1000000";
                 end case;
             end if;
     end process;
