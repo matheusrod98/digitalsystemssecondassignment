@@ -42,6 +42,9 @@ architecture bcd_calculator_test of bcd_calculator is
     signal a: std_logic_vector (15 downto 0) := "0000000000000000";
     signal b: std_logic_vector (15 downto 0) := "0000000000000000";
 
+    -- This will be used to start the multiplier.
+    signal startMultiplication: std_logic := '0';
+
 begin
     
     -- Importing the n-bit adder from another vhdl file.
@@ -64,8 +67,9 @@ begin
         clk => G_CLOCK_50,
         reset => resetTrigger,
         done => open,
-        start => '1'
+        start => startMultiplication
     );
+
     -- This will be controller to store the A input.
     process (V_BT (0))
         
@@ -174,7 +178,7 @@ begin
 
         begin
 
-            updatedDisplay <= '0'; 
+            updatedDisplay      <= '0'; 
 
             if resetTrigger = '1' then
 
@@ -207,8 +211,11 @@ begin
                 hundredsMultiplicationOutput            := "0000";
                 tensMultiplicationOutput                := "0000";
                 unitsMultiplicationOutput               := "0000";
+                startMultiplication                     <= '0';
 
             elsif storeA = '1' and storeB = '1' and V_SW (17) = '1' then
+
+                startMultiplication <= '1';
                 
                 tensMillionsMultiplicationOutput       := multiplicationResult (31 downto 28);
                 millionsMultiplicationOutput           := multiplicationResult (27 downto 24);
