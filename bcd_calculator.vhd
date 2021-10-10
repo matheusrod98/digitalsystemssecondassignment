@@ -174,7 +174,8 @@ begin
 
         variable tempVectorAdditionOutput:                  std_logic_vector (15 downto 0) := "0000000000000000";
         variable tempVectorMultiplicationOutput:            std_logic_vector (31 downto 0) := "00000000000000000000000000000000";
-        variable tempVectorInput:                           std_logic_vector (15 downto 0) := "0000000000000000";
+        variable tempVectorInputA:                          std_logic_vector (15 downto 0) := "0000000000000000";
+        variable tempVectorInputB:                          std_logic_vector (15 downto 0) := "0000000000000000";
 
         begin
 
@@ -184,7 +185,8 @@ begin
 
 
                 updatedDisplay                          <= '1';
-                tempVectorInput                         := "0000000000000000";
+                tempVectorInputA                        := "0000000000000000";
+                tempVectorInputB                        := "0000000000000000";
                 a                                       <= "0000000000000000";
                 b                                       <= "0000000000000000";
                 
@@ -470,29 +472,34 @@ begin
 
             else 
 
-                for i in 0 to 15 loop
-                    tempVectorInput (i) := V_SW (i);
-                end loop;
-
                 if storeA = '0' then
 
-                    thousandsInputA := tempVectorInput (15 downto 12);
-                    hundredsInputA  := tempVectorInput (11 downto 8);
-                    tensInputA      := tempVectorInput (7 downto 4);
-                    unitsInputA     := tempVectorInput (3 downto 0);
+                    for i in 0 to 15 loop
+                        tempVectorInputA (i) := V_SW (i);
+                    end loop;
+
+                    thousandsInputA := tempVectorInputA (15 downto 12);
+                    hundredsInputA  := tempVectorInputA (11 downto 8);
+                    tensInputA      := tempVectorInputA (7 downto 4);
+                    unitsInputA     := tempVectorInputA (3 downto 0);
 
                 end if;
 
                 if storeA = '1' then
-                    a <= tempVectorInput (15 downto 0);
-                    thousandsInputB := tempVectorInput (15 downto 12);
-                    hundredsInputB  := tempVectorInput (11 downto 8);
-                    tensInputB      := tempVectorInput (7 downto 4);
-                    unitsInputB     := tempVectorInput (3 downto 0);
+                    a <= tempVectorInputA (15 downto 0);
+
+                    for i in 0 to 15 loop
+                        tempVectorInputB (i) := V_SW (i);
+                    end loop;
+
+                    thousandsInputB := tempVectorInputB (15 downto 12);
+                    hundredsInputB  := tempVectorInputB (11 downto 8);
+                    tensInputB      := tempVectorInputB (7 downto 4);
+                    unitsInputB     := tempVectorInputB (3 downto 0);
                 end if;
 
                 if storeB = '1' then
-                    b <= tempVectorInput (15 downto 0);
+                    b <= tempVectorInputB (15 downto 0);
                 end if;
 
                 -- Tables to convert the B input to 7-seg.
