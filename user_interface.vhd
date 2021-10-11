@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 
-entity bcd_calculator is 
+entity user_interface is 
 
     port
     (
@@ -19,9 +19,9 @@ entity bcd_calculator is
         G_HEX7:     out std_logic_vector (6 downto 0)   -- Show the input B.
     );
 
-end entity bcd_calculator;
+end entity user_interface;
 
-architecture bcd_calculator_test of bcd_calculator is
+architecture user_interface_test of user_interface is
 
     -- These will be used to trigger the storage of both inputs from the user.
     signal storeA: std_logic := '0';
@@ -51,7 +51,7 @@ architecture bcd_calculator_test of bcd_calculator is
 begin
     
     -- Importing the n-bit adder from another vhdl file.
-    nBitAdder: entity work.n_somador (teste)
+    nBitAdder: entity work.n_digit_adder (test)
 
     port map (
         x => a,
@@ -61,7 +61,7 @@ begin
     );
 
     -- Importing the n-bit multiplier from another vhdl file.
-    nBitMultiplier: entity work.n_by_m_multiplier (architecture_nbmm)
+    nBitMultiplier: entity work.n_m_multiplier (architecture_nbmm)
 
     port map (
         x => a,
